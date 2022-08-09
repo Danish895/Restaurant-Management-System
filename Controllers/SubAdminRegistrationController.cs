@@ -1,32 +1,29 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Hotel_Management.Configurations;
 using Hotel_Management.Database;
 using Hotel_Management.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Hotel_Management.DTO;
-using Hotel_Management.Configurations;
 
 namespace Hotel_Management.Controllers
 {
-
-    [ApiController]
     [Route("api/[controller]")]
-
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class UserController : ControllerBase
+    [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class SubAdminRegistrationController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _configuration;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<UserController> _logger;
+        private readonly ILogger<SubAdminRegistrationController> _logger;
 
-        public UserController(ApplicationDbContext db, RoleManager<IdentityRole> roleManager, ILogger<UserController> logger, UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public SubAdminRegistrationController(ApplicationDbContext db, RoleManager<IdentityRole> roleManager, ILogger<SubAdminRegistrationController> logger, UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
             _logger = logger;
             _roleManager = roleManager;
@@ -35,11 +32,18 @@ namespace Hotel_Management.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("UserRegistration")]
-        public async Task<IActionResult> UserRegister(UserModel user)
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SubAdminRegistration(UserModel user)
+        {
+            //var roleResult = await _roleManager.CreateAsync(new IdentityRole(department));
+            var SubAdmins = await SubAdminRegister(user);
+            return Ok(new { SubAdmins });
+        }
+        private async Task<IActionResult> SubAdminRegister(UserModel user)
         {
             if (ModelState.IsValid)
-            { 
+            {
                 var existingUser = await _userManager.FindByEmailAsync(user.email);
 
                 if (existingUser != null)
@@ -57,9 +61,9 @@ namespace Hotel_Management.Controllers
                 var isCreated = await _userManager.CreateAsync(newUser, user.password);
                 if (isCreated.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(newUser, "User");
+                    await _userManager.AddToRoleAsync(newUser, "SubAdmin");
 
-                    var jwtToken = CreateToken(newUser);  
+                    var jwtToken = CreateToken(newUser);
 
                     return Ok(new
                     {
@@ -84,6 +88,7 @@ namespace Hotel_Management.Controllers
                 Success = false
             });
         }
+
         private async Task<AuthResult> CreateToken(IdentityUser user)
         {
             var claims = await GetAllValidClaims(user);
@@ -145,75 +150,6 @@ namespace Hotel_Management.Controllers
                 }
             }
             return claims;
-        }
-
-
-        [HttpPost("AdminLogin")]
-        public async Task<IActionResult> AdminLogin([FromBody] UserRequestDto User)
-        {
-            string name = "Admin";
-            var result = await Login(User, name);
-            return Ok(result);
-        }
-        [HttpPost("SubAdminLogin")]
-        public async Task<IActionResult> SubAdminLogin([FromBody] UserRequestDto User)
-        {
-            string name = "SubAdmin";
-            var result = await Login(User, name);
-            return Ok(result);
-        }
-        [HttpPost("UserLogin")]
-        public async Task<IActionResult> UserLogin([FromBody] UserRequestDto User)
-        {
-            string name = "User";
-            var result = await Login(User, name);
-            return Ok(result);
-        }
-
-        private async Task<IActionResult> Login([FromBody] UserRequestDto User, string name)
-        {
-            if (ModelState.IsValid)
-            {
-                var existingUser = await _userManager.FindByEmailAsync(User.email);
-                if (existingUser == null)
-                {
-                    return BadRequest(new
-                    {
-                        Errors = new List<string>()
-                        {
-                            "Login with correct email "
-                        },
-                        Succcess = false
-                    });
-                }
-                var isCorrect = await _userManager.CheckPasswordAsync(existingUser, User.password);
-                if (!isCorrect)
-                {
-                    return BadRequest(new
-                    {
-                        Errrors = new List<string>()
-                        {
-                            "Check your password and try again with correct password"
-                        },
-                        Success = false
-                    });
-                }
-                //await _userManager.AddToRoleAsync(existingUser, name);
-                var jwtToken = CreateToken(existingUser);
-                return Ok(new
-                {
-                    Success = true,
-                    token = jwtToken
-                });
-            }
-            return BadRequest(new
-            {
-                Errors = new List<String>()
-                {
-                    "Invalid payload"
-                },
-                Success = false
-            });
         }
     }
 }

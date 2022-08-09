@@ -37,7 +37,7 @@ namespace Hotel_Management.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = "Admin,SubAdmin, User")]
+        [Authorize(Roles = "Admin,SubAdmin, User")]
         public async Task<IActionResult> Get()
         {
             //string userId = _userService.Id();
@@ -59,7 +59,7 @@ namespace Hotel_Management.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, SubAdmin, AppUser")]
+        [Authorize(Roles = "Admin, SubAdmin, User")]
         public async Task<IActionResult> Get(int id)
         {
             string userId = _userService.Id();
@@ -104,7 +104,7 @@ namespace Hotel_Management.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,SubAdmin")]
-        public async Task <IActionResult> delete(int id, [FromBody] DishDto item)
+        public async Task <IActionResult> delete(int id)
         {
             string userId = _userService.Id();
             
@@ -117,6 +117,89 @@ namespace Hotel_Management.Controllers
                 return Ok(new { msg = "removed" });
             }
             return BadRequest("bad request");
+        }
+
+        //[HttpPost("OrderYourDish")]
+        //[Authorize(Roles = "User")]
+        //public async Task<IActionResult> PostOrder([FromBody] DishDto item)
+        //{
+        //    string UserId = _userService.Id();
+        //    IdentityUser user = await _userManager.FindByIdAsync(UserId);
+
+        //    if (await _db.DishModels.FirstOrDefaultAsync(t => t.dishName == item.dishName && t.price == item.price) != null)
+        //    {
+        //        OrderModel OrderedDishes = new OrderModel()
+        //        {
+        //            dishName = item.dishName,
+        //            price = item.price,
+        //            UserId = UserId,
+        //            User = user
+        //        };
+        //        await _db.OrderModels.AddAsync(OrderedDishes);
+        //        await _db.SaveChangesAsync();
+        //        return CreatedAtAction("Get", OrderedDishes);
+        //    }
+        //    return BadRequest(new
+        //    {
+        //        Errors = "Please enter valid order"
+        //    });
+        //}
+        [HttpPost("OrderYourDish")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> PostOrder([FromBody] OrderDto[] orderId)
+        {
+            string UserId = _userService.Id();
+            IdentityUser user = await _userManager.FindByIdAsync(UserId);
+            foreach (var item in orderId)
+            {
+                DishModel dish = await _db.DishModels.FirstOrDefaultAsync(t => t.Id == item.myOrderId);
+                if (dish != null)
+                {
+                    OrderModel OrderedDishes = new OrderModel()
+                    {
+                        dishName = dish.dishName,
+                        price = dish.price,
+                        category = dish.category,
+                        description = dish.description,
+                        SubAdminId = dish.UserId,
+                        UserId = UserId,
+                        User = user
+                    };
+                    await _db.OrderModels.AddAsync(OrderedDishes);
+                    await _db.SaveChangesAsync();
+                }
+            }
+            return Ok(new { msg = "Your dish is ordered successfully" });
+        }
+
+        [HttpGet("MyOrders")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> GetOrdrs()
+        {
+            string UserId = _userService.Id();
+            IdentityUser user = await _userManager.FindByIdAsync(UserId);
+            List<OrderModel> orders = await _db.OrderModels.Where(t => t.UserId == UserId).ToListAsync();
+            return Ok(new { orders });
+        }
+
+        [HttpDelete("deleteMyOrder")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> deleteMyOrder([FromBody] OrderDto[] orderId)
+        {
+            string UserId = _userService.Id();
+            IdentityUser user = await _userManager.FindByIdAsync(UserId);
+            foreach (var item in orderId)
+            {
+                OrderModel dish = await _db.OrderModels.FirstOrDefaultAsync(t => t.Id == item.myOrderId);
+
+                if (dish != null)
+                {
+                    _db.OrderModels.Remove(dish);
+                    await _db.SaveChangesAsync();
+                    //return Ok(new { msg = "Your dish is deleted successfully" });
+                }
+            }
+            return Ok(new { msg = "Your dish is deleted successfully" });
         }
     }
 }

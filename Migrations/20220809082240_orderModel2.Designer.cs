@@ -4,6 +4,7 @@ using Hotel_Management.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hotel_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220809082240_orderModel2")]
+    partial class orderModel2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,6 +31,12 @@ namespace Hotel_Management.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("DishId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrderIdId")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -56,6 +64,8 @@ namespace Hotel_Management.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderIdId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("DishModels");
@@ -68,12 +78,6 @@ namespace Hotel_Management.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int?>("DishIdId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SubAdminId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -91,8 +95,6 @@ namespace Hotel_Management.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DishIdId");
 
                     b.HasIndex("UserId");
 
@@ -299,24 +301,24 @@ namespace Hotel_Management.Migrations
 
             modelBuilder.Entity("Hotel_Management.Models.DishModel", b =>
                 {
+                    b.HasOne("Hotel_Management.Models.OrderModel", "OrderId")
+                        .WithMany()
+                        .HasForeignKey("OrderIdId");
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("OrderId");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Hotel_Management.Models.OrderModel", b =>
                 {
-                    b.HasOne("Hotel_Management.Models.DishModel", "DishId")
-                        .WithMany()
-                        .HasForeignKey("DishIdId");
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
-
-                    b.Navigation("DishId");
 
                     b.Navigation("User");
                 });

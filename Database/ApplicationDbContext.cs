@@ -11,7 +11,7 @@ namespace Hotel_Management.Database
 
         //public DbSet<UserModel> UserModels { get; set; }
         public DbSet<DishModel> DishModels { get; set; }
-        //public DbSet<OrderModel> OrderModels { get; set; }
-        public DbSet<SessionModel> SessionModels { get; set; }
+        public DbSet<OrderModel> OrderModels { get; set; }
+        
     }
 }

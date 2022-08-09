@@ -1,12 +1,10 @@
 ﻿namespace Hotel_Management.DTO
 {
-    public class DishDto
+    public class OrderDto
     {
-      
+
         public string dishName { get; set; }
-        public string category { get; set; }
-        public string description { get; set; }
         public int price { get; set; }
-        
+        public int myOrderId { get; set; }
     }
 }

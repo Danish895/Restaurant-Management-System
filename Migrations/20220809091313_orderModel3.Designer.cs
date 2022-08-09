@@ -4,6 +4,7 @@ using Hotel_Management.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hotel_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220809091313_orderModel3")]
+    partial class orderModel3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,9 +74,6 @@ namespace Hotel_Management.Migrations
                     b.Property<int?>("DishIdId")
                         .HasColumnType("int");
 
-                    b.Property<string>("SubAdminId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
@@ -85,6 +84,9 @@ namespace Hotel_Management.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("dishName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("orderId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("price")
